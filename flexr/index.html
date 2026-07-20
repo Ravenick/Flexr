@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="flexr">
+<html lang="en" data-theme="aurora">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Flexr — Share without data</title>
+<title>Flexr: Share without data</title>
 <meta name="theme-color" content="#0A0A0F">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
 :root{
   --bg: #07070B;
@@ -18,18 +19,34 @@
   --stroke: rgba(255,255,255,0.07);
   --text: #F3F1F8;
   --text-dim: #8D8996;
-  --red: #FF3D6E;
-  --purple: #8B2FF0;
-  --grad: linear-gradient(135deg, var(--red) 0%, var(--purple) 100%);
-  --grad-soft: linear-gradient(135deg, rgba(255,61,110,0.16) 0%, rgba(139,47,240,0.16) 100%);
+  --accent1: #22D3EE;
+  --accent2: #7C3AED;
+  --accent1-rgb: 34,211,238;
+  --accent2-rgb: 124,58,237;
+  --grad: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
+  --grad-soft: linear-gradient(135deg, rgba(var(--accent1-rgb),0.16) 0%, rgba(var(--accent2-rgb),0.16) 100%);
   --radius: 20px;
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', sans-serif;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
+html[data-theme="berry"]{
+  --accent1: #FF3D6E;
+  --accent2: #8B2FF0;
+  --accent1-rgb: 255,61,110;
+  --accent2-rgb: 139,47,240;
+}
+html[data-theme="emerald"]{
+  --accent1: #2DD4BF;
+  --accent2: #22C55E;
+  --accent1-rgb: 45,212,191;
+  --accent2-rgb: 34,197,94;
+}
 html[data-theme="mono"]{
-  --red: #6E6E7A;
-  --purple: #3A3A44;
+  --accent1: #9A9AA4;
+  --accent2: #45454F;
+  --accent1-rgb: 154,154,164;
+  --accent2-rgb: 69,69,79;
   --bg: #050505;
   --surface: #101010;
   --surface-2: #161616;
@@ -48,7 +65,7 @@ body{
   height: 100dvh;
   position: relative;
   background:
-    radial-gradient(120% 60% at 50% -10%, rgba(139,47,240,0.20), transparent 60%),
+    radial-gradient(120% 60% at 50% -10%, rgba(var(--accent2-rgb),0.20), transparent 60%),
     var(--bg);
   display:flex;
   flex-direction:column;
@@ -64,16 +81,15 @@ body{
 }
 .brand{ display:flex; align-items:center; gap:10px; }
 .brand .mark{
-  width:30px; height:30px; border-radius:9px; background:var(--grad);
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-display); font-weight:700; font-size:15px; color:#fff;
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
 }
+.brand .mark img{ width:100%; height:100%; object-fit:contain; }
 .brand .word{ font-family:var(--font-display); font-weight:700; font-size:19px; letter-spacing:-0.02em; }
 .avatar-btn{
   width:38px; height:38px; border-radius:50%; background:var(--surface-2);
   border:1px solid var(--stroke); display:flex; align-items:center; justify-content:center;
   font-family:var(--font-display); font-weight:600; font-size:14px; color:var(--text-dim);
-  overflow:hidden;
+  overflow:hidden; cursor:pointer;
 }
 .avatar-btn img{ width:100%; height:100%; object-fit:cover; }
 
@@ -103,7 +119,7 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 .bar>div{ height:100%; background:var(--grad); border-radius:6px; }
 .no-data-pill{
   margin-top:14px; display:inline-flex; align-items:center; gap:7px;
-  background:var(--grad-soft); border:1px solid rgba(255,61,110,0.25);
+  background:var(--grad-soft); border:1px solid rgba(var(--accent1-rgb),0.25);
   padding:6px 12px; border-radius:100px; font-size:12px; font-weight:600;
 }
 .dot-live{ width:7px; height:7px; border-radius:50%; background:#3DFFA0; box-shadow:0 0 8px #3DFFA0; }
@@ -115,7 +131,7 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
   transition: transform .15s ease, border-color .15s ease;
 }
 .tile:active{ transform: scale(.97); }
-.tile .icn{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--surface-2); }
+.tile .icn{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--surface-2); font-size:15px; }
 .tile .lbl{ font-weight:600; font-size:14.5px; }
 .tile .sub{ color:var(--text-dim); font-size:11.5px; }
 
@@ -125,7 +141,7 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
   display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--stroke);
 }
 .activity-row:last-child{ border-bottom:none; }
-.activity-icn{ width:38px; height:38px; border-radius:11px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.activity-icn{ width:38px; height:38px; border-radius:11px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; }
 .activity-txt .t1{ font-size:13.5px; font-weight:600; }
 .activity-txt .t2{ font-size:11.5px; color:var(--text-dim); }
 .activity-row .amt{ margin-left:auto; font-size:12px; color:var(--text-dim); }
@@ -143,29 +159,29 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 .file-row:active{ background:var(--surface); }
 .file-chk{
   width:20px; height:20px; border-radius:6px; border:1.5px solid var(--stroke); flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; background:var(--surface); font-size:11px; color:#fff;
 }
 .file-chk.checked{ background:var(--grad); border-color:transparent; }
-.file-icn{ width:36px; height:36px; border-radius:10px; background:var(--surface-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:15px; }
+.file-icn{ width:36px; height:36px; border-radius:10px; background:var(--surface-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; }
 .file-name{ font-size:13.5px; font-weight:500; }
 .file-meta{ font-size:11px; color:var(--text-dim); }
-.file-del{ margin-left:auto; padding:6px; color:var(--text-dim); flex-shrink:0; }
+.file-del{ margin-left:auto; padding:6px; color:var(--text-dim); flex-shrink:0; font-size:14px; }
 .empty-state{ text-align:center; padding:60px 20px; color:var(--text-dim); }
-.empty-state .icn{ font-size:34px; margin-bottom:10px; }
+.empty-state .icn{ font-size:30px; margin-bottom:12px; color:var(--text-dim); }
 
 /* ---------- radar / discover ---------- */
 .radar-wrap{ display:flex; flex-direction:column; align-items:center; padding-top:6px; }
 .radar{ position:relative; width:260px; height:260px; margin: 10px 0 26px; }
 .radar-ring{
-  position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,61,110,0.18);
+  position:absolute; inset:0; border-radius:50%; border:1px solid rgba(var(--accent1-rgb),0.18);
 }
 .radar-ring:nth-child(2){ inset:32px; }
 .radar-ring:nth-child(3){ inset:64px; }
 .radar-ring:nth-child(4){ inset:96px; }
 .radar-core{
   position:absolute; inset:112px; border-radius:50%; background:var(--grad);
-  box-shadow: 0 0 40px rgba(139,47,240,0.5);
-  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 0 40px rgba(var(--accent2-rgb),0.5);
+  display:flex; align-items:center; justify-content:center; font-size:26px; color:#fff;
 }
 .radar-sweep{
   position:absolute; inset:0; border-radius:50%; overflow:hidden;
@@ -173,7 +189,7 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 }
 .radar-sweep::before{
   content:""; position:absolute; inset:0;
-  background: conic-gradient(from 0deg, rgba(255,61,110,0.55), transparent 26%);
+  background: conic-gradient(from 0deg, rgba(var(--accent1-rgb),0.55), transparent 26%);
 }
 @keyframes spin{ to{ transform: rotate(360deg); } }
 .ping{
@@ -192,25 +208,43 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 .q-item{ background:var(--surface); border:1px solid var(--stroke); border-radius:16px; padding:14px; margin-bottom:10px; }
 .q-top{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
 .q-name{ font-size:13.5px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.q-cancel{ width:24px; height:24px; border-radius:50%; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:12px; flex-shrink:0; }
+.q-cancel{ width:24px; height:24px; border-radius:50%; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:11px; flex-shrink:0; }
 .q-bar{ height:6px; border-radius:5px; background:var(--surface-2); overflow:hidden; margin-bottom:6px; }
 .q-bar>div{ height:100%; background:var(--grad); border-radius:5px; transition: width .2s ease; }
 .q-sub{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); }
 
 /* ---------- profile ---------- */
 .profile-head{ display:flex; flex-direction:column; align-items:center; padding: 10px 0 22px; }
-.profile-avatar{ width:78px; height:78px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:28px; font-weight:700; margin-bottom:12px; }
+.profile-avatar-wrap{ position:relative; margin-bottom:12px; }
+.profile-avatar{ width:78px; height:78px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:28px; font-weight:700; overflow:hidden; cursor:pointer; }
+.profile-avatar img{ width:100%; height:100%; object-fit:cover; }
+.avatar-edit-badge{
+  position:absolute; right:-2px; bottom:-2px; width:26px; height:26px; border-radius:50%;
+  background:var(--surface-2); border:2px solid var(--bg); display:flex; align-items:center; justify-content:center;
+  font-size:11px; color:var(--text); cursor:pointer;
+}
+.profile-name-row{ display:flex; align-items:center; gap:8px; }
 .profile-name{ font-family:var(--font-display); font-weight:700; font-size:18px; }
-.profile-tag{ color:var(--text-dim); font-size:12.5px; }
+.name-edit-btn{ color:var(--text-dim); font-size:13px; cursor:pointer; padding:4px; }
+.name-input{
+  font-family:var(--font-display); font-weight:700; font-size:18px; text-align:center; background:var(--surface-2);
+  border:1px solid var(--stroke); border-radius:10px; color:var(--text); padding:4px 10px; width:160px;
+}
+.profile-tag{ color:var(--text-dim); font-size:12.5px; margin-top:2px; }
 .settings-group{ background:var(--surface); border:1px solid var(--stroke); border-radius:16px; margin-bottom:16px; overflow:hidden; }
 .settings-row{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--stroke); }
 .settings-row:last-child{ border-bottom:none; }
 .settings-row .s-lbl{ font-size:13.5px; font-weight:500; flex:1; }
 .settings-row .s-sub{ font-size:11px; color:var(--text-dim); }
-.theme-swatch{ width:26px; height:26px; border-radius:50%; border:2px solid transparent; }
-.theme-swatch.flexr{ background:linear-gradient(135deg,#FF3D6E,#8B2FF0); }
-.theme-swatch.mono{ background:linear-gradient(135deg,#6E6E7A,#3A3A44); }
-.theme-swatch.active{ border-color:#fff; }
+.theme-row{ display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap; }
+.theme-opt{ display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; }
+.theme-swatch{ width:30px; height:30px; border-radius:50%; border:2px solid transparent; }
+.theme-swatch.aurora{ background:linear-gradient(135deg,#22D3EE,#7C3AED); }
+.theme-swatch.berry{ background:linear-gradient(135deg,#FF3D6E,#8B2FF0); }
+.theme-swatch.emerald{ background:linear-gradient(135deg,#2DD4BF,#22C55E); }
+.theme-swatch.mono{ background:linear-gradient(135deg,#9A9AA4,#45454F); }
+.theme-opt.active .theme-swatch{ border-color:var(--text); }
+.theme-opt .t-lbl{ font-size:10.5px; color:var(--text-dim); }
 .switch{ width:44px; height:26px; border-radius:100px; background:var(--surface-2); position:relative; flex-shrink:0; border:1px solid var(--stroke); }
 .switch>div{ width:20px; height:20px; border-radius:50%; background:var(--text-dim); position:absolute; top:2px; left:2px; transition: all .2s ease; }
 .switch.on{ background:var(--grad); }
@@ -226,22 +260,22 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 }
 .nav-btn{ display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--text-dim); font-size:10.5px; width:64px; }
 .nav-btn.active{ color:var(--text); }
-.nav-btn .ic{ font-size:19px; }
+.nav-btn .ic{ font-size:17px; }
 .nav-spacer{ width:64px; }
 
 .bubble-zone{ position:absolute; left:50%; bottom: calc(38px + var(--safe-b)); transform:translateX(-50%); z-index:30; }
 .bubble-main{
   width:60px; height:60px; border-radius:50%; background:var(--grad);
-  box-shadow: 0 8px 26px rgba(139,47,240,0.45);
-  display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px;
+  box-shadow: 0 8px 26px rgba(var(--accent2-rgb),0.45);
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:21px;
   transition: transform .25s cubic-bezier(.34,1.56,.64,1);
   position:relative; z-index:2;
 }
 .bubble-zone.open .bubble-main{ transform: rotate(45deg) scale(0.92); }
 .satellite{
   position:absolute; top:50%; width:56px; height:56px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1px;
-  color:#fff; font-size:19px; opacity:0; pointer-events:none;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:2px;
+  color:#fff; font-size:16px; opacity:0; pointer-events:none;
   transition: all .32s cubic-bezier(.34,1.56,.64,1);
   border:1px solid rgba(255,255,255,0.18);
 }
@@ -256,15 +290,29 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 }
 .bubble-backdrop.show{ opacity:1; pointer-events:auto; }
 
-/* ---------- qr / camera ---------- */
+/* ---------- qr / camera / code ---------- */
 .qr-frame{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--radius); padding:22px; display:flex; flex-direction:column; align-items:center; margin-bottom:16px; }
 #qrcanvas{ background:#fff; padding:10px; border-radius:14px; }
+.code-display{ display:flex; gap:10px; margin:18px 0 6px; }
+.code-digit{
+  width:44px; height:52px; border-radius:12px; background:var(--surface-2); border:1px solid var(--stroke);
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700;
+  font-size:24px; letter-spacing:0;
+}
+.code-copy-btn{ margin-top:10px; font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:6px; cursor:pointer; }
 .cam-wrap{ position:relative; width:100%; aspect-ratio:1/1; border-radius:var(--radius); overflow:hidden; background:#000; margin-bottom:14px; }
 .cam-wrap video{ width:100%; height:100%; object-fit:cover; }
-.cam-frame{ position:absolute; inset:16%; border:2px solid var(--red); border-radius:20px; }
+.cam-frame{ position:absolute; inset:16%; border:2px solid var(--accent1); border-radius:20px; }
 .tabs{ display:flex; background:var(--surface); border-radius:14px; padding:4px; margin-bottom:18px; }
-.tab{ flex:1; text-align:center; padding:10px; border-radius:11px; font-size:13px; font-weight:600; color:var(--text-dim); }
+.tab{ flex:1; text-align:center; padding:10px 4px; border-radius:11px; font-size:12.5px; font-weight:600; color:var(--text-dim); }
 .tab.active{ background:var(--grad); color:#fff; }
+.code-entry-wrap{ display:flex; flex-direction:column; align-items:center; padding-top:6px; }
+.code-inputs{ display:flex; gap:10px; margin:14px 0 22px; }
+.code-input{
+  width:52px; height:60px; border-radius:14px; background:var(--surface); border:1px solid var(--stroke);
+  text-align:center; font-family:var(--font-display); font-weight:700; font-size:26px; color:var(--text);
+}
+.code-input:focus{ outline:none; border-color:var(--accent1); }
 
 /* ---------- buttons/toast ---------- */
 .btn{ display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border-radius:14px; font-weight:600; font-size:14px; border:none; width:100%; font-family:var(--font-body); }
@@ -282,8 +330,8 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 <div id="shell">
 
   <div class="topbar">
-    <div class="brand"><div class="mark">F</div><div class="word">Flexr</div></div>
-    <div class="avatar-btn" id="avatarBtn">A</div>
+    <div class="brand"><div class="mark"><img src="logo-mark.png" alt="Flexr"></div><div class="word">Flexr</div></div>
+    <div class="avatar-btn" id="avatarBtn" onclick="go('profile')">A</div>
   </div>
 
   <div class="screens">
@@ -302,79 +350,97 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
       <div class="section-lbl">Quick actions</div>
       <div class="grid2">
         <div class="tile" onclick="go('discover');openBubbleFlow('send')">
-          <div class="icn">📤</div>
+          <div class="icn"><i class="fa-solid fa-paper-plane"></i></div>
           <div><div class="lbl">Send files</div><div class="sub">Pick &amp; pair a device</div></div>
         </div>
         <div class="tile" onclick="go('discover');openBubbleFlow('receive')">
-          <div class="icn">📥</div>
-          <div><div class="lbl">Receive files</div><div class="sub">Scan a Flexr code</div></div>
+          <div class="icn"><i class="fa-solid fa-download"></i></div>
+          <div><div class="lbl">Receive files</div><div class="sub">Scan or enter a code</div></div>
         </div>
       </div>
 
       <div class="section-lbl">Browse device</div>
       <div class="grid2">
-        <div class="tile" onclick="go('files')"><div class="icn">🗂️</div><div><div class="lbl">Files</div><div class="sub">Manage &amp; delete</div></div></div>
-        <div class="tile" onclick="go('files')"><div class="icn">📱</div><div><div class="lbl">Apps</div><div class="sub">Installed .apk</div></div></div>
+        <div class="tile" onclick="go('files')"><div class="icn"><i class="fa-solid fa-folder-open"></i></div><div><div class="lbl">Files</div><div class="sub">Manage &amp; delete</div></div></div>
+        <div class="tile" onclick="go('files')"><div class="icn"><i class="fa-solid fa-mobile-screen-button"></i></div><div><div class="lbl">Apps</div><div class="sub">Installed .apk</div></div></div>
       </div>
 
       <div class="section-lbl">Recent activity</div>
       <div id="activityList">
-        <div class="empty-state"><div class="icn">🌙</div>No transfers yet — it's quiet in here.</div>
+        <div class="empty-state"><div class="icn"><i class="fa-regular fa-moon"></i></div>No transfers yet. It's quiet in here.</div>
       </div>
     </section>
 
     <!-- FILES -->
     <section class="screen" data-screen="files">
       <h1 class="page-title">Files</h1>
-      <p class="page-sub">Grant a folder once — Flexr can list, share, or delete inside it.</p>
+      <p class="page-sub">Grant a folder once, then Flexr can list, share, or delete inside it.</p>
       <div class="filebar">
-        <button class="pickbtn" id="pickFolderBtn">📁 Choose folder</button>
-        <button class="pickbtn" id="pickInputBtn">➕ Add files</button>
+        <button class="pickbtn" id="pickFolderBtn"><i class="fa-solid fa-folder-open"></i> Choose folder</button>
+        <button class="pickbtn" id="pickInputBtn"><i class="fa-solid fa-plus"></i> Add files</button>
       </div>
       <input type="file" id="hiddenFileInput" multiple style="display:none">
       <div class="section-lbl">On this device</div>
-      <div id="fileList"><div class="empty-state"><div class="icn">📭</div>No folder open yet.<br>Tap "Choose folder" to begin.</div></div>
+      <div id="fileList"><div class="empty-state"><div class="icn"><i class="fa-solid fa-inbox"></i></div>No folder open yet.<br>Tap "Choose folder" to begin.</div></div>
     </section>
 
     <!-- DISCOVER / RADAR -->
     <section class="screen" data-screen="discover">
       <h1 class="page-title">Nearby</h1>
-      <p class="page-sub">Pairing happens with a code — nothing touches the internet.</p>
+      <p class="page-sub">Pair with a QR code or a 4 digit code. Files always transfer directly, device to device.</p>
       <div class="radar-wrap">
         <div class="radar">
           <div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div>
           <div class="radar-sweep"></div>
-          <div class="radar-core">📡</div>
+          <div class="radar-core"><i class="fa-solid fa-satellite-dish"></i></div>
           <div class="ping" style="top:22%; left:68%;"></div>
           <div class="ping" style="top:64%; left:26%; animation-delay:.6s;"></div>
         </div>
-        <div class="radar-status">Searching your Wi-Fi network for <b>Flexr</b> devices…<br>or pair instantly with a code below.</div>
+        <div class="radar-status">Searching your Wi-Fi network for <b>Flexr</b> devices…<br>or pair instantly below.</div>
         <button class="btn primary" onclick="openBubbleFlow('send')">Show my code to send</button>
         <div style="height:10px"></div>
-        <button class="btn ghost" onclick="openBubbleFlow('receive')">Scan a code to receive</button>
+        <button class="btn ghost" onclick="openBubbleFlow('receive')">Scan or enter a code to receive</button>
       </div>
     </section>
 
-    <!-- QR (send = show code, receive = scan code) -->
+    <!-- QR / CODE (send = show code, receive = scan or enter code) -->
     <section class="screen" data-screen="qr">
       <h1 class="page-title" id="qrTitle">Connect</h1>
       <div class="tabs">
         <div class="tab" id="tabShow" onclick="setQrMode('show')">My code</div>
         <div class="tab" id="tabScan" onclick="setQrMode('scan')">Scan</div>
+        <div class="tab" id="tabEnter" onclick="setQrMode('enter')">Enter code</div>
       </div>
 
       <div id="qrShowPane">
         <div class="qr-frame">
-          <canvas id="qrcanvas" width="220" height="220"></canvas>
-          <p style="color:var(--text-dim); font-size:12px; margin-top:14px; text-align:center;">Ask the other person to open Flexr → Scan, and point their camera here.</p>
+          <canvas id="qrcanvas" width="200" height="200"></canvas>
+          <div class="code-display" id="codeDisplay">
+            <div class="code-digit">·</div><div class="code-digit">·</div><div class="code-digit">·</div><div class="code-digit">·</div>
+          </div>
+          <div class="code-copy-btn" onclick="copyMyCode()"><i class="fa-regular fa-copy"></i> Copy code</div>
         </div>
-        <button class="btn ghost" onclick="setQrMode('scan')">I need to scan theirs instead →</button>
+        <p style="color:var(--text-dim); font-size:12px; margin:-6px 0 16px; text-align:center;">Ask the other person to open Flexr and scan this, or type the code in.</p>
+        <button class="btn ghost" onclick="setQrMode('scan')">I need to scan or enter theirs instead <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i></button>
       </div>
 
       <div id="qrScanPane" style="display:none;">
         <div class="cam-wrap"><video id="camVideo" autoplay playsinline muted></video><div class="cam-frame"></div></div>
         <canvas id="scanCanvas" style="display:none;"></canvas>
         <p style="color:var(--text-dim); font-size:12px; text-align:center;" id="scanHint">Point your camera at their Flexr code.</p>
+      </div>
+
+      <div id="qrEnterPane" style="display:none;">
+        <div class="code-entry-wrap">
+          <p style="color:var(--text-dim); font-size:13px; text-align:center; margin:4px 0 0;">Ask them for their 4 digit Flexr code.</p>
+          <div class="code-inputs">
+            <input class="code-input" id="codeIn0" type="text" inputmode="numeric" maxlength="1">
+            <input class="code-input" id="codeIn1" type="text" inputmode="numeric" maxlength="1">
+            <input class="code-input" id="codeIn2" type="text" inputmode="numeric" maxlength="1">
+            <input class="code-input" id="codeIn3" type="text" inputmode="numeric" maxlength="1">
+          </div>
+          <button class="btn primary" onclick="connectWithEnteredCode()"><i class="fa-solid fa-link"></i>&nbsp; Connect</button>
+        </div>
       </div>
     </section>
 
@@ -388,24 +454,40 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
     <!-- PROFILE -->
     <section class="screen" data-screen="profile">
       <div class="profile-head">
-        <div class="profile-avatar" id="profileAvatarBig">A</div>
-        <div class="profile-name" id="profileNameLbl">Alex</div>
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profileAvatarBig" onclick="triggerAvatarPick()">A</div>
+          <div class="avatar-edit-badge" onclick="triggerAvatarPick()"><i class="fa-solid fa-camera"></i></div>
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none">
+        <div class="profile-name-row">
+          <div class="profile-name" id="profileNameLbl">Alex</div>
+          <div class="name-edit-btn" id="nameEditBtn" onclick="startNameEdit()"><i class="fa-solid fa-pen"></i></div>
+        </div>
         <div class="profile-tag">This device's Flexr name</div>
       </div>
 
       <div class="section-lbl">Appearance</div>
       <div class="settings-group">
-        <div class="settings-row">
-          <div class="s-lbl">Theme</div>
-          <div class="theme-swatch flexr active" id="swatchFlexr" onclick="setTheme('flexr')"></div>
-          <div class="theme-swatch mono" id="swatchMono" onclick="setTheme('mono')"></div>
+        <div class="theme-row">
+          <div class="theme-opt active" id="themeOptAurora" onclick="setTheme('aurora')">
+            <div class="theme-swatch aurora"></div><div class="t-lbl">Aurora</div>
+          </div>
+          <div class="theme-opt" id="themeOptBerry" onclick="setTheme('berry')">
+            <div class="theme-swatch berry"></div><div class="t-lbl">Berry</div>
+          </div>
+          <div class="theme-opt" id="themeOptEmerald" onclick="setTheme('emerald')">
+            <div class="theme-swatch emerald"></div><div class="t-lbl">Emerald</div>
+          </div>
+          <div class="theme-opt" id="themeOptMono" onclick="setTheme('mono')">
+            <div class="theme-swatch mono"></div><div class="t-lbl">Mono</div>
+          </div>
         </div>
       </div>
 
       <div class="section-lbl">Transfer</div>
       <div class="settings-group">
         <div class="settings-row">
-          <div><div class="s-lbl">No Data Mode</div><div class="s-sub">LAN-only — blocks any external relay server</div></div>
+          <div><div class="s-lbl">No Data Mode</div><div class="s-sub">LAN-only. Blocks any external relay server</div></div>
           <div class="switch on" id="noDataSwitch" onclick="toggleNoData()"><div></div></div>
         </div>
         <div class="settings-row">
@@ -416,7 +498,7 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
 
       <div class="section-lbl">About</div>
       <div class="settings-group">
-        <div class="settings-row"><div class="s-lbl">Version</div><div class="s-sub">1.0.0 · PWA</div></div>
+        <div class="settings-row"><div class="s-lbl">Version</div><div class="s-sub">1.1.0 · PWA</div></div>
         <div class="settings-row"><div class="s-lbl">Data used this session</div><div class="s-sub" id="dataUsedProfile">0 KB</div></div>
       </div>
     </section>
@@ -428,23 +510,24 @@ h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700;
   <div class="bubble-backdrop" id="bubbleBackdrop" onclick="closeBubble()"></div>
 
   <div class="navbar">
-    <div class="nav-btn active" data-nav="home" onclick="go('home')"><div class="ic">⌂</div>Home</div>
-    <div class="nav-btn" data-nav="discover" onclick="go('discover')"><div class="ic">📡</div>Nearby</div>
+    <div class="nav-btn active" data-nav="home" onclick="go('home')"><div class="ic"><i class="fa-solid fa-house"></i></div>Home</div>
+    <div class="nav-btn" data-nav="discover" onclick="go('discover')"><div class="ic"><i class="fa-solid fa-satellite-dish"></i></div>Nearby</div>
     <div class="nav-spacer"></div>
-    <div class="nav-btn" data-nav="profile" onclick="go('profile')"><div class="ic">◐</div>Profile</div>
-    <div class="nav-btn" data-nav="files" onclick="go('files')"><div class="ic">🗂</div>Files</div>
+    <div class="nav-btn" data-nav="profile" onclick="go('profile')"><div class="ic"><i class="fa-solid fa-user"></i></div>Profile</div>
+    <div class="nav-btn" data-nav="files" onclick="go('files')"><div class="ic"><i class="fa-solid fa-folder-open"></i></div>Files</div>
   </div>
 
   <div class="bubble-zone" id="bubbleZone">
-    <div class="satellite left" onclick="openBubbleFlow('receive')">📥<span>Receive</span></div>
-    <div class="bubble-main" id="bubbleMain" onclick="toggleBubble()">✦</div>
-    <div class="satellite right" onclick="openBubbleFlow('send')">📤<span>Share</span></div>
+    <div class="satellite left" onclick="openBubbleFlow('receive')"><i class="fa-solid fa-download"></i><span>Receive</span></div>
+    <div class="bubble-main" id="bubbleMain" onclick="toggleBubble()"><i class="fa-solid fa-bolt"></i></div>
+    <div class="satellite right" onclick="openBubbleFlow('send')"><i class="fa-solid fa-paper-plane"></i><span>Share</span></div>
   </div>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

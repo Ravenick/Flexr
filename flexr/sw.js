@@ -1,9 +1,10 @@
-const CACHE = "flexr-v1";
+const CACHE = "flexr-v2";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./logo-mark.png"
 ];
 
 self.addEventListener("install", (e) => {
@@ -21,7 +22,7 @@ self.addEventListener("activate", (e) => {
 });
 
 // Cache-first for our own shell. Everything else (fonts/libs loaded once) falls back to network
-// only if not already cached — Flexr's core never needs the network to run.
+// only if not already cached. Flexr's core never needs the network to run.
 self.addEventListener("fetch", (e) => {
   e.respondWith(
     caches.match(e.request).then((cached) => cached || fetch(e.request).catch(() => cached))

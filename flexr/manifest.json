@@ -1,5 +1,5 @@
 {
-  "name": "Flexr — Share without data",
+  "name": "Flexr: Share without data",
   "short_name": "Flexr",
   "description": "Local, offline, peer-to-peer file sharing. No internet data used.",
   "start_url": "./index.html",

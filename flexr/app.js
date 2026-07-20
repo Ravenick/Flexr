@@ -23,8 +23,10 @@ function go(name) {
 /* ============ Theme ============ */
 function setTheme(name) {
   document.documentElement.dataset.theme = name;
-  document.getElementById('swatchFlexr').classList.toggle('active', name === 'flexr');
-  document.getElementById('swatchMono').classList.toggle('active', name === 'mono');
+  ['aurora','berry','emerald','mono'].forEach(t => {
+    const opt = document.getElementById('themeOpt' + t[0].toUpperCase() + t.slice(1));
+    if (opt) opt.classList.toggle('active', t === name);
+  });
   localStorage.setItem('flexr-theme', name);
 }
 (function initTheme(){
@@ -40,7 +42,9 @@ let noDataMode = true;
 function toggleNoData() {
   noDataMode = !noDataMode;
   document.getElementById('noDataSwitch').classList.toggle('on', noDataMode);
-  toast(noDataMode ? 'No Data Mode on — LAN only, no STUN/relay used' : 'No Data Mode off — will use a STUN server to help pairing');
+  toast(noDataMode ? 'No Data Mode on: LAN only, no STUN/relay used for the transfer' : 'No Data Mode off: will use a STUN server to help pairing');
+  // ICE config is fixed when a Peer connects, so rebuild it next time one is needed.
+  teardownPeer();
 }
 
 /* ============ Data usage counter (stays ~0 by design) ============ */
@@ -51,6 +55,80 @@ function renderDataUsed() {
   document.getElementById('dataUsedProfile').textContent = kb + ' KB';
 }
 renderDataUsed();
+
+/* ============ Profile: name + avatar ============ */
+function initials(name) {
+  const n = (name || '').trim();
+  return n ? n[0].toUpperCase() : 'F';
+}
+function applyProfileToUI() {
+  const name = localStorage.getItem('flexr-name') || 'Alex';
+  const avatar = localStorage.getItem('flexr-avatar');
+  document.getElementById('profileNameLbl').textContent = name;
+
+  const big = document.getElementById('profileAvatarBig');
+  const small = document.getElementById('avatarBtn');
+  if (avatar) {
+    big.innerHTML = `<img src="${avatar}" alt="">`;
+    small.innerHTML = `<img src="${avatar}" alt="">`;
+  } else {
+    big.textContent = initials(name);
+    small.textContent = initials(name);
+  }
+}
+applyProfileToUI();
+
+function startNameEdit() {
+  const lbl = document.getElementById('profileNameLbl');
+  const current = lbl.textContent;
+  const input = document.createElement('input');
+  input.className = 'name-input';
+  input.value = current;
+  input.maxLength = 24;
+  lbl.replaceWith(input);
+  document.getElementById('nameEditBtn').style.display = 'none';
+  input.focus();
+  input.select();
+
+  function commit() {
+    const val = input.value.trim() || 'Alex';
+    localStorage.setItem('flexr-name', val);
+    const newLbl = document.createElement('div');
+    newLbl.className = 'profile-name';
+    newLbl.id = 'profileNameLbl';
+    newLbl.textContent = val;
+    input.replaceWith(newLbl);
+    document.getElementById('nameEditBtn').style.display = '';
+    applyProfileToUI();
+  }
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+}
+
+function triggerAvatarPick() { document.getElementById('avatarInput').click(); }
+document.getElementById('avatarInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = () => {
+    img.onload = () => {
+      const size = 240;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      localStorage.setItem('flexr-avatar', dataUrl);
+      applyProfileToUI();
+      toast('Profile photo updated');
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
 
 /* ============ Bubble ============ */
 let bubbleOpen = false;
@@ -76,12 +154,12 @@ let currentDirHandle = null;
 let selectedFiles = new Map(); // name -> {handle/file, size}
 
 function renderFileEmpty(msg) {
-  document.getElementById('fileList').innerHTML = `<div class="empty-state"><div class="icn">📭</div>${msg}</div>`;
+  document.getElementById('fileList').innerHTML = `<div class="empty-state"><div class="icn"><i class="fa-solid fa-inbox"></i></div>${msg}</div>`;
 }
 
 async function pickFolder() {
   if (!window.showDirectoryPicker) {
-    toast('This browser can\u2019t open folders directly — use "Add files" instead');
+    toast('This browser can\u2019t open folders directly, use "Add files" instead');
     return;
   }
   try {
@@ -92,13 +170,13 @@ async function pickFolder() {
 
 function fileIconFor(name) {
   const ext = name.split('.').pop().toLowerCase();
-  if (['jpg','jpeg','png','gif','webp','heic'].includes(ext)) return '🖼️';
-  if (['mp4','mov','mkv','avi'].includes(ext)) return '🎬';
-  if (['mp3','wav','m4a','flac'].includes(ext)) return '🎵';
-  if (['apk'].includes(ext)) return '📱';
-  if (['pdf'].includes(ext)) return '📄';
-  if (['zip','rar','7z'].includes(ext)) return '🗜️';
-  return '📦';
+  if (['jpg','jpeg','png','gif','webp','heic'].includes(ext)) return '<i class="fa-solid fa-image"></i>';
+  if (['mp4','mov','mkv','avi'].includes(ext)) return '<i class="fa-solid fa-film"></i>';
+  if (['mp3','wav','m4a','flac'].includes(ext)) return '<i class="fa-solid fa-music"></i>';
+  if (['apk'].includes(ext)) return '<i class="fa-solid fa-mobile-screen-button"></i>';
+  if (['pdf'].includes(ext)) return '<i class="fa-solid fa-file-pdf"></i>';
+  if (['zip','rar','7z'].includes(ext)) return '<i class="fa-solid fa-file-zipper"></i>';
+  return '<i class="fa-solid fa-file"></i>';
 }
 function fmtSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
@@ -124,7 +202,7 @@ async function renderFileList() {
         <div class="file-name">${escapeHtml(r.name)}</div>
         <div class="file-meta">${fmtSize(r.size)}</div>
       </div>
-      <div class="file-del" onclick="deleteFile('${escapeAttr(r.name)}')">🗑</div>
+      <div class="file-del" onclick="deleteFile('${escapeAttr(r.name)}')"><i class="fa-solid fa-trash"></i></div>
     </div>
   `).join('');
   // keep a lookup for handles
@@ -138,8 +216,13 @@ function toggleFileSelect(el) {
   const name = el.dataset.name;
   el.classList.toggle('checked');
   const row = window.__flexrFileRows.find(r => r.name === name);
-  if (el.classList.contains('checked')) selectedFiles.set(name, row);
-  else selectedFiles.delete(name);
+  if (el.classList.contains('checked')) {
+    selectedFiles.set(name, row);
+    el.innerHTML = '<i class="fa-solid fa-check"></i>';
+  } else {
+    selectedFiles.delete(name);
+    el.innerHTML = '';
+  }
 }
 
 async function deleteFile(name) {
@@ -150,7 +233,7 @@ async function deleteFile(name) {
     toast(`Deleted ${name}`);
     renderFileList();
   } catch (e) {
-    toast('Couldn\u2019t delete — check folder permissions');
+    toast('Couldn\u2019t delete, check folder permissions');
   }
 }
 
@@ -168,7 +251,7 @@ function renderPickedFallback(files) {
   list.dataset.hasFallback = '1';
   const rows = files.map(f => `
     <div class="file-row">
-      <div class="file-chk checked"></div>
+      <div class="file-chk checked"><i class="fa-solid fa-check"></i></div>
       <div class="file-icn">${fileIconFor(f.name)}</div>
       <div style="flex:1; min-width:0;">
         <div class="file-name">${escapeHtml(f.name)}</div>
@@ -181,62 +264,125 @@ function renderPickedFallback(files) {
 
 /* ============ Radar screen: simulated ambient discovery ============ */
 // Real device discovery isn't possible from a sandboxed browser (no LAN broadcast/mDNS access),
-// so Nearby is an on-ramp to the QR pairing flow. The pings are ambient motion, not fake peers.
+// so Nearby is an on-ramp to the QR/code pairing flow. The pings are ambient motion, not fake peers.
 
-/* ============ WebRTC QR pairing (zero server, LAN-capable) ============ */
-let pc = null;
-let dataChannel = null;
-let qrMode = 'show'; // 'show' (offerer/sender) | 'scan' (answerer/receiver)
-let pairingRole = null; // 'offer' | 'answer'
+/* ============================================================
+   Pairing: WebRTC data channel, brokered by a lightweight PeerJS
+   signaling hop. Only the tiny handshake touches that relay;
+   every file byte still flows directly between the two devices.
+   ============================================================ */
+let myPeer = null;      // this device's Peer, created on demand
+let myCode = null;      // this device's 4 digit code (without prefix)
+let conn = null;        // active PeerJS DataConnection
+let qrMode = 'show';    // 'show' | 'scan' | 'enter'
 let camStream = null;
 let scanLoopId = null;
 
+const PEER_PREFIX = 'flexr-';
+
 function iceServersFor() {
-  // No Data Mode ON: no ICE servers at all — connection only succeeds if both devices
-  // are reachable directly (same Wi-Fi/hotspot), guaranteeing zero external network use.
+  // No Data Mode ON: no ICE servers at all, the connection only succeeds if both devices
+  // are reachable directly (same Wi-Fi/hotspot), keeping the transfer itself off the internet.
   // No Data Mode OFF: adds a public STUN server (a few hundred bytes, one-time) to help
   // pairing across trickier NATs.
   return noDataMode ? [] : [{ urls: 'stun:stun.l.google.com:19302' }];
+}
+
+function randomCode() {
+  return String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+}
+
+function teardownPeer() {
+  teardownConnection(false);
+  if (myPeer) { try { myPeer.destroy(); } catch (e) {} myPeer = null; }
+  myCode = null;
+}
+
+function ensureMyPeer() {
+  if (myPeer && !myPeer.destroyed && myPeer.open) return Promise.resolve(myPeer);
+  if (myPeer && !myPeer.destroyed) {
+    // already trying to open, wait for it
+    return new Promise((resolve) => myPeer.once('open', () => resolve(myPeer)));
+  }
+  return new Promise((resolve, reject) => {
+    attemptCreate(0);
+    function attemptCreate(tries) {
+      const code = randomCode();
+      const p = new Peer(PEER_PREFIX + code, { config: { iceServers: iceServersFor() } });
+      let settled = false;
+      p.on('open', () => {
+        if (settled) return;
+        settled = true;
+        myPeer = p;
+        myCode = code;
+        wireIncomingConnections(p);
+        resolve(p);
+      });
+      p.on('error', (err) => {
+        if (settled) return;
+        if (err.type === 'unavailable-id' && tries < 5) {
+          settled = true;
+          try { p.destroy(); } catch (e) {}
+          attemptCreate(tries + 1);
+        } else if (!settled) {
+          settled = true;
+          toast('Could not start pairing, check your connection and try again');
+          reject(err);
+        }
+      });
+    }
+  });
+}
+
+function wireIncomingConnections(p) {
+  p.on('connection', (incoming) => {
+    if (conn && conn.open) { incoming.close(); return; } // one active transfer at a time
+    conn = incoming;
+    wireDataChannel();
+  });
+}
+
+function renderMyCode() {
+  const digits = (myCode || '····').split('');
+  document.getElementById('codeDisplay').innerHTML = digits.map(d => `<div class="code-digit">${d}</div>`).join('');
+}
+function copyMyCode() {
+  if (!myCode) return;
+  navigator.clipboard?.writeText(myCode).then(() => toast('Code copied')).catch(() => toast(myCode));
 }
 
 function setQrMode(mode) {
   qrMode = mode;
   document.getElementById('tabShow').classList.toggle('active', mode === 'show');
   document.getElementById('tabScan').classList.toggle('active', mode === 'scan');
+  document.getElementById('tabEnter').classList.toggle('active', mode === 'enter');
   document.getElementById('qrShowPane').style.display = mode === 'show' ? 'block' : 'none';
   document.getElementById('qrScanPane').style.display = mode === 'scan' ? 'block' : 'none';
-  document.getElementById('qrTitle').textContent = mode === 'show' ? 'Your share code' : 'Scan to receive';
+  document.getElementById('qrEnterPane').style.display = mode === 'enter' ? 'block' : 'none';
+  document.getElementById('qrTitle').textContent =
+    mode === 'show' ? 'Your share code' : mode === 'scan' ? 'Scan to receive' : 'Enter their code';
   stopScanLoop();
-  if (mode === 'show') startOfferFlow();
-  else startScanFlow();
+  if (mode === 'show') startShowFlow();
+  else if (mode === 'scan') startScanFlow();
+  else if (mode === 'enter') setTimeout(() => document.getElementById('codeIn0')?.focus(), 50);
 }
 
-async function startOfferFlow() {
-  pairingRole = 'offer';
-  teardownConnection(false);
-  pc = new RTCPeerConnection({ iceServers: iceServersFor() });
-  dataChannel = pc.createDataChannel('flexr');
-  wireDataChannel();
-  wirePeerConnection();
-
-  pc.onicecandidate = null; // we wait for full gathering instead of trickling (keeps QR self-contained)
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  await waitForIceGatheringComplete(pc);
-
-  const payload = JSON.stringify({ t: 'offer', sdp: pc.localDescription });
-  drawQR(payload);
+async function startShowFlow() {
+  try {
+    await ensureMyPeer();
+    renderMyCode();
+    drawQR(myCode);
+  } catch (e) { /* toast already shown */ }
 }
 
 async function startScanFlow() {
-  pairingRole = 'answer';
   const video = document.getElementById('camVideo');
   try {
     camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     video.srcObject = camStream;
     startScanLoop();
   } catch (e) {
-    document.getElementById('scanHint').textContent = 'Camera access denied — enable it in your browser settings.';
+    document.getElementById('scanHint').textContent = 'Camera access denied. Enable it in your browser settings, or use "Enter code" instead.';
   }
 }
 
@@ -250,7 +396,7 @@ function startScanLoop() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(img.data, img.width, img.height);
-      if (code) { handleScannedPayload(code.data); return; }
+      if (code && /^\d{4}$/.test(code.data.trim())) { handleScannedCode(code.data.trim()); return; }
     }
     scanLoopId = requestAnimationFrame(tick);
   }
@@ -262,56 +408,42 @@ function stopScanLoop() {
   if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
 }
 
-async function handleScannedPayload(raw) {
-  let data;
-  try { data = JSON.parse(raw); } catch (e) { return; }
+function handleScannedCode(code) {
   stopScanLoop();
+  document.getElementById('scanHint').textContent = `Scanned ${code}, connecting…`;
+  connectWithCode(code);
+}
 
-  if (data.t === 'offer' && pairingRole === 'answer') {
-    teardownConnection(false);
-    pc = new RTCPeerConnection({ iceServers: iceServersFor() });
-    wirePeerConnection();
-    pc.ondatachannel = (e) => { dataChannel = e.channel; wireDataChannel(); };
-    await pc.setRemoteDescription(data.sdp);
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    await waitForIceGatheringComplete(pc);
-    document.getElementById('scanHint').textContent = 'Scanned! Showing your reply code — have them scan it back.';
-    setTimeout(() => {
-      document.getElementById('qrShowPane').style.display = 'block';
-      document.getElementById('qrScanPane').style.display = 'none';
-      document.getElementById('qrTitle').textContent = 'Show this back to them';
-      drawQR(JSON.stringify({ t: 'answer', sdp: pc.localDescription }));
-    }, 400);
-  } else if (data.t === 'answer' && pairingRole === 'offer') {
-    await pc.setRemoteDescription(data.sdp);
-    toast('Connecting…');
+/* ---- Enter-code tab: auto-advance between the four boxes ---- */
+(function wireCodeInputs(){
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('codeIn' + i);
+    if (!el) continue;
+    el.addEventListener('input', () => {
+      el.value = el.value.replace(/\D/g, '').slice(0, 1);
+      if (el.value && i < 3) document.getElementById('codeIn' + (i + 1)).focus();
+      if (el.value && i === 3) connectWithEnteredCode();
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !el.value && i > 0) document.getElementById('codeIn' + (i - 1)).focus();
+    });
   }
+})();
+function connectWithEnteredCode() {
+  const code = [0,1,2,3].map(i => document.getElementById('codeIn' + i).value).join('');
+  if (!/^\d{4}$/.test(code)) { toast('Enter all 4 digits'); return; }
+  connectWithCode(code);
 }
 
-function wirePeerConnection() {
-  pc.onconnectionstatechange = () => {
-    if (pc.connectionState === 'connected') {
-      toast('Devices paired — connection is direct, peer-to-peer');
-      go('queue');
-      flushQueueIfReady();
-    } else if (['failed','disconnected','closed'].includes(pc.connectionState)) {
-      // no-op, handled by cancel/teardown paths
-    }
-  };
-}
-
-function waitForIceGatheringComplete(peerConnection) {
-  if (peerConnection.iceGatheringState === 'complete') return Promise.resolve();
-  return new Promise(resolve => {
-    function check() {
-      if (peerConnection.iceGatheringState === 'complete') {
-        peerConnection.removeEventListener('icegatheringstatechange', check);
-        resolve();
-      }
-    }
-    peerConnection.addEventListener('icegatheringstatechange', check);
-  });
+async function connectWithCode(code) {
+  try {
+    await ensureMyPeer();
+    if (conn) { try { conn.close(); } catch (e) {} }
+    conn = myPeer.connect(PEER_PREFIX + code, { reliable: true, serialization: 'binary' });
+    toast('Connecting…');
+    conn.on('error', () => toast('Couldn\u2019t reach that code, double check it and try again'));
+    wireDataChannel();
+  } catch (e) { /* toast already shown */ }
 }
 
 function drawQR(text) {
@@ -320,22 +452,21 @@ function drawQR(text) {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   // qrcodejs draws into a div normally; use its low-level API via a temp element instead
   const tmp = document.createElement('div');
-  new QRCode(tmp, { text, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.L });
+  new QRCode(tmp, { text, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.H });
   setTimeout(() => {
     const img = tmp.querySelector('img') || tmp.querySelector('canvas');
     if (img.tagName === 'IMG') {
       const image = new Image();
-      image.onload = () => ctx.drawImage(image, 0, 0, 220, 220);
+      image.onload = () => ctx.drawImage(image, 0, 0, 200, 200);
       image.src = img.src;
     } else {
-      ctx.drawImage(img, 0, 0, 220, 220);
+      ctx.drawImage(img, 0, 0, 200, 200);
     }
   }, 30);
 }
 
 function teardownConnection(notify=true) {
-  if (dataChannel) { try{ dataChannel.close(); }catch(e){} dataChannel = null; }
-  if (pc) { try{ pc.close(); }catch(e){} pc = null; }
+  if (conn) { try{ conn.close(); }catch(e){} conn = null; }
   if (notify) toast('Connection closed');
 }
 
@@ -347,10 +478,9 @@ let receivingBuffer = [];
 let receivingReceived = 0;
 
 function wireDataChannel() {
-  dataChannel.binaryType = 'arraybuffer';
-  dataChannel.onopen = () => { toast('Data channel open — ready to transfer'); flushQueueIfReady(); };
-  dataChannel.onclose = () => {};
-  dataChannel.onmessage = (e) => handleIncoming(e.data);
+  conn.on('open', () => { toast('Devices paired, connection is direct, peer-to-peer'); go('queue'); flushQueueIfReady(); });
+  conn.on('close', () => {});
+  conn.on('data', (data) => handleIncoming(data));
 }
 
 function handleIncoming(data) {
@@ -375,8 +505,9 @@ function handleIncoming(data) {
       receivingMeta = null;
     }
   } else {
-    receivingBuffer.push(data);
-    receivingReceived += data.byteLength;
+    const buf = data instanceof ArrayBuffer ? data : (data.buffer || data);
+    receivingBuffer.push(buf);
+    receivingReceived += buf.byteLength;
     if (receivingMeta) updateQueueItem(receivingMeta.id, { sent: receivingReceived });
   }
 }
@@ -407,7 +538,7 @@ function renderQueue() {
     <div class="q-item">
       <div class="q-top">
         <div class="q-name">${escapeHtml(q.name)}</div>
-        ${q.status==='sending'||q.status==='receiving' ? `<div class="q-cancel" onclick="cancelQueueItem('${q.id}')">✕</div>` : ''}
+        ${q.status==='sending'||q.status==='receiving' ? `<div class="q-cancel" onclick="cancelQueueItem('${q.id}')"><i class="fa-solid fa-xmark"></i></div>` : ''}
       </div>
       <div class="q-bar"><div style="width:${q.status==='done'?100:pct}%"></div></div>
       <div class="q-sub"><span>${label}</span><span>${fmtSize(q.sent)} / ${fmtSize(q.size)}</span></div>
@@ -419,15 +550,15 @@ function cancelQueueItem(id) {
   const item = queue.find(q => q.id === id);
   if (!item) return;
   item.status = 'cancelled';
-  if (dataChannel && dataChannel.readyState === 'open') {
-    dataChannel.send(JSON.stringify({ t: 'cancel', id }));
+  if (conn && conn.open) {
+    conn.send(JSON.stringify({ t: 'cancel', id }));
   }
   renderQueue();
   toast('Share cancelled');
 }
 
 async function flushQueueIfReady() {
-  if (!dataChannel || dataChannel.readyState !== 'open') return;
+  if (!conn || !conn.open) return;
   for (const [name, entry] of selectedFiles) {
     const file = entry.file || (entry.handle && await entry.handle.getFile());
     if (!file) continue;
@@ -439,7 +570,7 @@ async function flushQueueIfReady() {
 async function sendFile(file) {
   const id = 'f' + Math.random().toString(36).slice(2, 9);
   addQueueItem({ id, name: file.name, size: file.size, sent: 0, status: 'sending', direction: 'up' });
-  dataChannel.send(JSON.stringify({ t: 'meta', id, name: file.name, size: file.size }));
+  conn.send(JSON.stringify({ t: 'meta', id, name: file.name, size: file.size }));
 
   let offset = 0;
   const item = queue.find(q => q.id === id);
@@ -447,13 +578,13 @@ async function sendFile(file) {
     if (item.status === 'cancelled') return;
     const slice = file.slice(offset, offset + CHUNK_SIZE);
     const buf = await slice.arrayBuffer();
-    // simple backpressure
-    while (dataChannel.bufferedAmount > 1_000_000) await new Promise(r => setTimeout(r, 30));
-    dataChannel.send(buf);
+    // simple backpressure using PeerJS's queued-message count
+    while ((conn.bufferSize || 0) > 8) await new Promise(r => setTimeout(r, 30));
+    conn.send(buf);
     offset += buf.byteLength;
     updateQueueItem(id, { sent: offset });
   }
-  dataChannel.send(JSON.stringify({ t: 'done', id }));
+  conn.send(JSON.stringify({ t: 'done', id }));
   updateQueueItem(id, { status: 'done' });
   toast(`Sent ${file.name}`);
   logActivity(`Sent ${file.name}`, fmtSize(file.size));
@@ -467,7 +598,7 @@ function logActivity(title, sizeLabel) {
   const list = document.getElementById('activityList');
   list.innerHTML = activity.map(a => `
     <div class="activity-row">
-      <div class="activity-icn">${a.title.startsWith('Received') ? '📥' : '📤'}</div>
+      <div class="activity-icn"><i class="fa-solid ${a.title.startsWith('Received') ? 'fa-download' : 'fa-paper-plane'}"></i></div>
       <div class="activity-txt"><div class="t1">${escapeHtml(a.title)}</div><div class="t2">${a.time} · direct P2P</div></div>
       <div class="amt">${a.sizeLabel}</div>
     </div>
@@ -475,5 +606,4 @@ function logActivity(title, sizeLabel) {
 }
 
 /* ============ init ============ */
-setQrMode('show');
 renderQueue();
