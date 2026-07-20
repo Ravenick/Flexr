@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="flexr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Flexr — Share without data</title>
+<meta name="theme-color" content="#0A0A0F">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg: #07070B;
+  --surface: #121017;
+  --surface-2: #1A1720;
+  --stroke: rgba(255,255,255,0.07);
+  --text: #F3F1F8;
+  --text-dim: #8D8996;
+  --red: #FF3D6E;
+  --purple: #8B2FF0;
+  --grad: linear-gradient(135deg, var(--red) 0%, var(--purple) 100%);
+  --grad-soft: linear-gradient(135deg, rgba(255,61,110,0.16) 0%, rgba(139,47,240,0.16) 100%);
+  --radius: 20px;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+html[data-theme="mono"]{
+  --red: #6E6E7A;
+  --purple: #3A3A44;
+  --bg: #050505;
+  --surface: #101010;
+  --surface-2: #161616;
+}
+*{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html,body{ height:100%; margin:0; background:var(--bg); }
+body{
+  font-family: var(--font-body);
+  color: var(--text);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#shell{
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100dvh;
+  position: relative;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(139,47,240,0.20), transparent 60%),
+    var(--bg);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+::-webkit-scrollbar{ display:none; }
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 18px 20px 10px;
+  flex-shrink:0;
+}
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand .mark{
+  width:30px; height:30px; border-radius:9px; background:var(--grad);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-size:15px; color:#fff;
+}
+.brand .word{ font-family:var(--font-display); font-weight:700; font-size:19px; letter-spacing:-0.02em; }
+.avatar-btn{
+  width:38px; height:38px; border-radius:50%; background:var(--surface-2);
+  border:1px solid var(--stroke); display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:600; font-size:14px; color:var(--text-dim);
+  overflow:hidden;
+}
+.avatar-btn img{ width:100%; height:100%; object-fit:cover; }
+
+/* ---------- screens ---------- */
+.screens{ flex:1; position:relative; overflow:hidden; }
+.screen{
+  position:absolute; inset:0;
+  padding: 4px 20px calc(96px + var(--safe-b));
+  overflow-y:auto;
+  opacity:0; pointer-events:none; transform: translateY(10px);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.screen.active{ opacity:1; pointer-events:auto; transform:none; }
+
+h1.page-title{ font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-0.02em; margin: 6px 0 2px; }
+.page-sub{ color:var(--text-dim); font-size:13.5px; margin:0 0 18px; }
+
+/* ---------- home ---------- */
+.storage-card{
+  background: var(--surface); border:1px solid var(--stroke); border-radius: var(--radius);
+  padding:18px; margin-bottom:18px;
+}
+.storage-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+.storage-row .big{ font-family:var(--font-display); font-size:22px; font-weight:700; }
+.storage-row .lbl{ color:var(--text-dim); font-size:12.5px; }
+.bar{ height:8px; border-radius:6px; background:var(--surface-2); overflow:hidden; }
+.bar>div{ height:100%; background:var(--grad); border-radius:6px; }
+.no-data-pill{
+  margin-top:14px; display:inline-flex; align-items:center; gap:7px;
+  background:var(--grad-soft); border:1px solid rgba(255,61,110,0.25);
+  padding:6px 12px; border-radius:100px; font-size:12px; font-weight:600;
+}
+.dot-live{ width:7px; height:7px; border-radius:50%; background:#3DFFA0; box-shadow:0 0 8px #3DFFA0; }
+
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+.tile{
+  background:var(--surface); border:1px solid var(--stroke); border-radius:16px;
+  padding:16px; display:flex; flex-direction:column; gap:24px; cursor:pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.tile:active{ transform: scale(.97); }
+.tile .icn{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--surface-2); }
+.tile .lbl{ font-weight:600; font-size:14.5px; }
+.tile .sub{ color:var(--text-dim); font-size:11.5px; }
+
+.section-lbl{ font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); font-weight:600; margin: 4px 0 10px; }
+
+.activity-row{
+  display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--stroke);
+}
+.activity-row:last-child{ border-bottom:none; }
+.activity-icn{ width:38px; height:38px; border-radius:11px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.activity-txt .t1{ font-size:13.5px; font-weight:600; }
+.activity-txt .t2{ font-size:11.5px; color:var(--text-dim); }
+.activity-row .amt{ margin-left:auto; font-size:12px; color:var(--text-dim); }
+
+/* ---------- files ---------- */
+.filebar{ display:flex; gap:10px; margin-bottom:14px; }
+.pickbtn{
+  flex:1; padding:13px; border-radius:14px; border:1px dashed var(--stroke);
+  background:var(--surface); color:var(--text); font-family:var(--font-body); font-weight:600; font-size:13px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.file-row{
+  display:flex; align-items:center; gap:12px; padding:11px 10px; border-radius:14px;
+}
+.file-row:active{ background:var(--surface); }
+.file-chk{
+  width:20px; height:20px; border-radius:6px; border:1.5px solid var(--stroke); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; background:var(--surface);
+}
+.file-chk.checked{ background:var(--grad); border-color:transparent; }
+.file-icn{ width:36px; height:36px; border-radius:10px; background:var(--surface-2); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:15px; }
+.file-name{ font-size:13.5px; font-weight:500; }
+.file-meta{ font-size:11px; color:var(--text-dim); }
+.file-del{ margin-left:auto; padding:6px; color:var(--text-dim); flex-shrink:0; }
+.empty-state{ text-align:center; padding:60px 20px; color:var(--text-dim); }
+.empty-state .icn{ font-size:34px; margin-bottom:10px; }
+
+/* ---------- radar / discover ---------- */
+.radar-wrap{ display:flex; flex-direction:column; align-items:center; padding-top:6px; }
+.radar{ position:relative; width:260px; height:260px; margin: 10px 0 26px; }
+.radar-ring{
+  position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,61,110,0.18);
+}
+.radar-ring:nth-child(2){ inset:32px; }
+.radar-ring:nth-child(3){ inset:64px; }
+.radar-ring:nth-child(4){ inset:96px; }
+.radar-core{
+  position:absolute; inset:112px; border-radius:50%; background:var(--grad);
+  box-shadow: 0 0 40px rgba(139,47,240,0.5);
+  display:flex; align-items:center; justify-content:center;
+}
+.radar-sweep{
+  position:absolute; inset:0; border-radius:50%; overflow:hidden;
+  animation: spin 3.2s linear infinite;
+}
+.radar-sweep::before{
+  content:""; position:absolute; inset:0;
+  background: conic-gradient(from 0deg, rgba(255,61,110,0.55), transparent 26%);
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+.ping{
+  position:absolute; width:9px; height:9px; border-radius:50%; background:#fff;
+  box-shadow:0 0 10px rgba(255,255,255,.8);
+}
+.ping::after{
+  content:""; position:absolute; inset:-6px; border-radius:50%; border:1px solid rgba(255,255,255,.5);
+  animation: pulse 1.8s ease-out infinite;
+}
+@keyframes pulse{ from{ transform:scale(.5); opacity:1;} to{ transform:scale(2.4); opacity:0; } }
+.radar-status{ font-size:13px; color:var(--text-dim); text-align:center; margin-bottom:20px; }
+.radar-status b{ color:var(--text); }
+
+/* ---------- queue ---------- */
+.q-item{ background:var(--surface); border:1px solid var(--stroke); border-radius:16px; padding:14px; margin-bottom:10px; }
+.q-top{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+.q-name{ font-size:13.5px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.q-cancel{ width:24px; height:24px; border-radius:50%; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:12px; flex-shrink:0; }
+.q-bar{ height:6px; border-radius:5px; background:var(--surface-2); overflow:hidden; margin-bottom:6px; }
+.q-bar>div{ height:100%; background:var(--grad); border-radius:5px; transition: width .2s ease; }
+.q-sub{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); }
+
+/* ---------- profile ---------- */
+.profile-head{ display:flex; flex-direction:column; align-items:center; padding: 10px 0 22px; }
+.profile-avatar{ width:78px; height:78px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:28px; font-weight:700; margin-bottom:12px; }
+.profile-name{ font-family:var(--font-display); font-weight:700; font-size:18px; }
+.profile-tag{ color:var(--text-dim); font-size:12.5px; }
+.settings-group{ background:var(--surface); border:1px solid var(--stroke); border-radius:16px; margin-bottom:16px; overflow:hidden; }
+.settings-row{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--stroke); }
+.settings-row:last-child{ border-bottom:none; }
+.settings-row .s-lbl{ font-size:13.5px; font-weight:500; flex:1; }
+.settings-row .s-sub{ font-size:11px; color:var(--text-dim); }
+.theme-swatch{ width:26px; height:26px; border-radius:50%; border:2px solid transparent; }
+.theme-swatch.flexr{ background:linear-gradient(135deg,#FF3D6E,#8B2FF0); }
+.theme-swatch.mono{ background:linear-gradient(135deg,#6E6E7A,#3A3A44); }
+.theme-swatch.active{ border-color:#fff; }
+.switch{ width:44px; height:26px; border-radius:100px; background:var(--surface-2); position:relative; flex-shrink:0; border:1px solid var(--stroke); }
+.switch>div{ width:20px; height:20px; border-radius:50%; background:var(--text-dim); position:absolute; top:2px; left:2px; transition: all .2s ease; }
+.switch.on{ background:var(--grad); }
+.switch.on>div{ left:20px; background:#fff; }
+
+/* ---------- bottom nav + bubble ---------- */
+.navbar{
+  position:absolute; left:0; right:0; bottom:0; height: calc(78px + var(--safe-b));
+  background: rgba(10,9,13,0.85); backdrop-filter: blur(16px);
+  border-top:1px solid var(--stroke);
+  display:flex; align-items:flex-start; justify-content:space-around;
+  padding-top:12px; z-index:20;
+}
+.nav-btn{ display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--text-dim); font-size:10.5px; width:64px; }
+.nav-btn.active{ color:var(--text); }
+.nav-btn .ic{ font-size:19px; }
+.nav-spacer{ width:64px; }
+
+.bubble-zone{ position:absolute; left:50%; bottom: calc(38px + var(--safe-b)); transform:translateX(-50%); z-index:30; }
+.bubble-main{
+  width:60px; height:60px; border-radius:50%; background:var(--grad);
+  box-shadow: 0 8px 26px rgba(139,47,240,0.45);
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+  position:relative; z-index:2;
+}
+.bubble-zone.open .bubble-main{ transform: rotate(45deg) scale(0.92); }
+.satellite{
+  position:absolute; top:50%; width:56px; height:56px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1px;
+  color:#fff; font-size:19px; opacity:0; pointer-events:none;
+  transition: all .32s cubic-bezier(.34,1.56,.64,1);
+  border:1px solid rgba(255,255,255,0.18);
+}
+.satellite span{ font-size:9px; font-weight:600; font-family:var(--font-body); }
+.satellite.left{ background: var(--surface-2); left:50%; transform: translate(-50%,-50%); }
+.satellite.right{ background: var(--surface-2); left:50%; transform: translate(-50%,-50%); }
+.bubble-zone.open .satellite.left{ opacity:1; pointer-events:auto; transform: translate(calc(-50% - 78px), -50%); }
+.bubble-zone.open .satellite.right{ opacity:1; pointer-events:auto; transform: translate(calc(-50% + 78px), -50%); }
+.bubble-backdrop{
+  position:fixed; inset:0; background:rgba(5,5,8,0.5); backdrop-filter: blur(2px);
+  opacity:0; pointer-events:none; transition: opacity .25s ease; z-index:10;
+}
+.bubble-backdrop.show{ opacity:1; pointer-events:auto; }
+
+/* ---------- qr / camera ---------- */
+.qr-frame{ background:var(--surface); border:1px solid var(--stroke); border-radius:var(--radius); padding:22px; display:flex; flex-direction:column; align-items:center; margin-bottom:16px; }
+#qrcanvas{ background:#fff; padding:10px; border-radius:14px; }
+.cam-wrap{ position:relative; width:100%; aspect-ratio:1/1; border-radius:var(--radius); overflow:hidden; background:#000; margin-bottom:14px; }
+.cam-wrap video{ width:100%; height:100%; object-fit:cover; }
+.cam-frame{ position:absolute; inset:16%; border:2px solid var(--red); border-radius:20px; }
+.tabs{ display:flex; background:var(--surface); border-radius:14px; padding:4px; margin-bottom:18px; }
+.tab{ flex:1; text-align:center; padding:10px; border-radius:11px; font-size:13px; font-weight:600; color:var(--text-dim); }
+.tab.active{ background:var(--grad); color:#fff; }
+
+/* ---------- buttons/toast ---------- */
+.btn{ display:flex; align-items:center; justify-content:center; gap:8px; padding:14px; border-radius:14px; font-weight:600; font-size:14px; border:none; width:100%; font-family:var(--font-body); }
+.btn.primary{ background:var(--grad); color:#fff; }
+.btn.ghost{ background:var(--surface); color:var(--text); border:1px solid var(--stroke); }
+.toast{
+  position:absolute; left:50%; bottom: calc(140px + var(--safe-b)); transform:translateX(-50%) translateY(20px);
+  background:var(--surface-2); border:1px solid var(--stroke); padding:11px 18px; border-radius:100px;
+  font-size:12.5px; font-weight:500; z-index:50; opacity:0; transition: all .25s ease; white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="shell">
+
+  <div class="topbar">
+    <div class="brand"><div class="mark">F</div><div class="word">Flexr</div></div>
+    <div class="avatar-btn" id="avatarBtn">A</div>
+  </div>
+
+  <div class="screens">
+
+    <!-- HOME -->
+    <section class="screen active" data-screen="home">
+      <h1 class="page-title">Share, no data<br>lost or used.</h1>
+      <p class="page-sub">Everything moves device-to-device over Wi-Fi.</p>
+
+      <div class="storage-card">
+        <div class="storage-row"><span class="big" id="mobileDataUsed">0 KB</span><span class="lbl">mobile data used today</span></div>
+        <div class="bar"><div style="width:2%"></div></div>
+        <div class="no-data-pill"><span class="dot-live"></span> No Data Mode active</div>
+      </div>
+
+      <div class="section-lbl">Quick actions</div>
+      <div class="grid2">
+        <div class="tile" onclick="go('discover');openBubbleFlow('send')">
+          <div class="icn">📤</div>
+          <div><div class="lbl">Send files</div><div class="sub">Pick &amp; pair a device</div></div>
+        </div>
+        <div class="tile" onclick="go('discover');openBubbleFlow('receive')">
+          <div class="icn">📥</div>
+          <div><div class="lbl">Receive files</div><div class="sub">Scan a Flexr code</div></div>
+        </div>
+      </div>
+
+      <div class="section-lbl">Browse device</div>
+      <div class="grid2">
+        <div class="tile" onclick="go('files')"><div class="icn">🗂️</div><div><div class="lbl">Files</div><div class="sub">Manage &amp; delete</div></div></div>
+        <div class="tile" onclick="go('files')"><div class="icn">📱</div><div><div class="lbl">Apps</div><div class="sub">Installed .apk</div></div></div>
+      </div>
+
+      <div class="section-lbl">Recent activity</div>
+      <div id="activityList">
+        <div class="empty-state"><div class="icn">🌙</div>No transfers yet — it's quiet in here.</div>
+      </div>
+    </section>
+
+    <!-- FILES -->
+    <section class="screen" data-screen="files">
+      <h1 class="page-title">Files</h1>
+      <p class="page-sub">Grant a folder once — Flexr can list, share, or delete inside it.</p>
+      <div class="filebar">
+        <button class="pickbtn" id="pickFolderBtn">📁 Choose folder</button>
+        <button class="pickbtn" id="pickInputBtn">➕ Add files</button>
+      </div>
+      <input type="file" id="hiddenFileInput" multiple style="display:none">
+      <div class="section-lbl">On this device</div>
+      <div id="fileList"><div class="empty-state"><div class="icn">📭</div>No folder open yet.<br>Tap "Choose folder" to begin.</div></div>
+    </section>
+
+    <!-- DISCOVER / RADAR -->
+    <section class="screen" data-screen="discover">
+      <h1 class="page-title">Nearby</h1>
+      <p class="page-sub">Pairing happens with a code — nothing touches the internet.</p>
+      <div class="radar-wrap">
+        <div class="radar">
+          <div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div>
+          <div class="radar-sweep"></div>
+          <div class="radar-core">📡</div>
+          <div class="ping" style="top:22%; left:68%;"></div>
+          <div class="ping" style="top:64%; left:26%; animation-delay:.6s;"></div>
+        </div>
+        <div class="radar-status">Searching your Wi-Fi network for <b>Flexr</b> devices…<br>or pair instantly with a code below.</div>
+        <button class="btn primary" onclick="openBubbleFlow('send')">Show my code to send</button>
+        <div style="height:10px"></div>
+        <button class="btn ghost" onclick="openBubbleFlow('receive')">Scan a code to receive</button>
+      </div>
+    </section>
+
+    <!-- QR (send = show code, receive = scan code) -->
+    <section class="screen" data-screen="qr">
+      <h1 class="page-title" id="qrTitle">Connect</h1>
+      <div class="tabs">
+        <div class="tab" id="tabShow" onclick="setQrMode('show')">My code</div>
+        <div class="tab" id="tabScan" onclick="setQrMode('scan')">Scan</div>
+      </div>
+
+      <div id="qrShowPane">
+        <div class="qr-frame">
+          <canvas id="qrcanvas" width="220" height="220"></canvas>
+          <p style="color:var(--text-dim); font-size:12px; margin-top:14px; text-align:center;">Ask the other person to open Flexr → Scan, and point their camera here.</p>
+        </div>
+        <button class="btn ghost" onclick="setQrMode('scan')">I need to scan theirs instead →</button>
+      </div>
+
+      <div id="qrScanPane" style="display:none;">
+        <div class="cam-wrap"><video id="camVideo" autoplay playsinline muted></video><div class="cam-frame"></div></div>
+        <canvas id="scanCanvas" style="display:none;"></canvas>
+        <p style="color:var(--text-dim); font-size:12px; text-align:center;" id="scanHint">Point your camera at their Flexr code.</p>
+      </div>
+    </section>
+
+    <!-- QUEUE -->
+    <section class="screen" data-screen="queue">
+      <h1 class="page-title">Smart queue</h1>
+      <p class="page-sub" id="queueSub">Nothing queued.</p>
+      <div id="queueList"></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="screen" data-screen="profile">
+      <div class="profile-head">
+        <div class="profile-avatar" id="profileAvatarBig">A</div>
+        <div class="profile-name" id="profileNameLbl">Alex</div>
+        <div class="profile-tag">This device's Flexr name</div>
+      </div>
+
+      <div class="section-lbl">Appearance</div>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div class="s-lbl">Theme</div>
+          <div class="theme-swatch flexr active" id="swatchFlexr" onclick="setTheme('flexr')"></div>
+          <div class="theme-swatch mono" id="swatchMono" onclick="setTheme('mono')"></div>
+        </div>
+      </div>
+
+      <div class="section-lbl">Transfer</div>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div><div class="s-lbl">No Data Mode</div><div class="s-sub">LAN-only — blocks any external relay server</div></div>
+          <div class="switch on" id="noDataSwitch" onclick="toggleNoData()"><div></div></div>
+        </div>
+        <div class="settings-row">
+          <div><div class="s-lbl">Auto-accept from known devices</div></div>
+          <div class="switch" id="autoAcceptSwitch" onclick="toggleSwitch(this)"><div></div></div>
+        </div>
+      </div>
+
+      <div class="section-lbl">About</div>
+      <div class="settings-group">
+        <div class="settings-row"><div class="s-lbl">Version</div><div class="s-sub">1.0.0 · PWA</div></div>
+        <div class="settings-row"><div class="s-lbl">Data used this session</div><div class="s-sub" id="dataUsedProfile">0 KB</div></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="bubble-backdrop" id="bubbleBackdrop" onclick="closeBubble()"></div>
+
+  <div class="navbar">
+    <div class="nav-btn active" data-nav="home" onclick="go('home')"><div class="ic">⌂</div>Home</div>
+    <div class="nav-btn" data-nav="discover" onclick="go('discover')"><div class="ic">📡</div>Nearby</div>
+    <div class="nav-spacer"></div>
+    <div class="nav-btn" data-nav="profile" onclick="go('profile')"><div class="ic">◐</div>Profile</div>
+    <div class="nav-btn" data-nav="files" onclick="go('files')"><div class="ic">🗂</div>Files</div>
+  </div>
+
+  <div class="bubble-zone" id="bubbleZone">
+    <div class="satellite left" onclick="openBubbleFlow('receive')">📥<span>Receive</span></div>
+    <div class="bubble-main" id="bubbleMain" onclick="toggleBubble()">✦</div>
+    <div class="satellite right" onclick="openBubbleFlow('send')">📤<span>Share</span></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
